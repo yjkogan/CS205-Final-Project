@@ -1,0 +1,33 @@
+Expected Input:
+List of data about a teacher including:
+1. User Id
+2. First Name
+3. State
+4. Date Created
+5. Score
+6. Upload Count
+7. Download Count
+8. School Name
+9. Subject Names (Separated by "|")
+10. Course Names
+11. Unit Titles
+12. Grade Names
+13. List of Lesson info:
+    1. Title
+    2. Description
+    3. Estimated Time
+    4. Relation Names?
+    5. Coauthors
+    6. Language
+    7. Publisher
+    8. Subjects
+    9. Keywords
+    10. Grade
+    11. Network
+
+Output:
+Ordered List of Tuples of the form (teacher ID,similarity score).
+
+Strategies:
+
+Strategy 1:
