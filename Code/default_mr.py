@@ -7,11 +7,13 @@ import comparisons as scr
 from mrjob.job import MRJob
 from collections import defaultdict
 
-#Hard coded teacher list. Updated dynamically by wrapper python script
-teacherlist = ["38","Jason","MA","11/9/2008 20:41,8043176","662","7231","Grove Hall Prep Middle School","Math | Number Sense and Operations | Algebra | Geometry | Data Analysis and Probability | Measurement","RPC 6th Grade Math Procedures | RPC 6th Grade Math Problem Solving | GHP 5th Grade Math Y","1 Whole Numbers | 2 Decimals | 3 Fractions | 4 Percents | 5 Geometry | Daily Activities | 6 Extensions and Review | Assessments | Whole Numbers | Integers | Number Theory | Data Analysis | Ratio and Proportion | Linear Relationships | Fractions | Decimals | Percents | Probability | Expressions | Patterns and Sequences | Measurement | Volume | Perimeter and Area | Working with Data | Coordinate Plane | Polygons | 3D Geometry | Introduction to Math Y","Fifth grade",'','','','','','','']
+#Placeholder for the teacherlist variable.
+#Updated dynamically by wrapper python script 'mr_launcher.py'
+#teacherlist_placeholder#
 
-#Hard coded dictionary associating columns with their numeric values
-coldict = {'SchoolName':7,'State':2,'Grades':11}
+#Placeholder for the coldict variable.
+#Updated dynamically by wrapper python script 'mr_launcher.py'
+#coldict_placeholder#
 
 #Function to calculate the similarity score
 def get_score(teacher,tocompare):
