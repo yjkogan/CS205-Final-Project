@@ -32,7 +32,14 @@ tempfile.close()
 
 start = time.time()
 #run the map_reduce job
-subprocess.call(['python','tempscript.py',args.database])
+
+#If debugging mode is on, just run the mapper
+#Do this because it makes print statements (in the mapper) work
+if(args.debug):
+   subprocess.call(['python','tempscript.py',args.database,'--mapper'])
+else:
+   subprocess.call(['python','tempscript.py',args.database])
+
 print "It took %f seconds to run the map_reduce job" % (time.time() - start)
 
 print "Cleaning up..."
