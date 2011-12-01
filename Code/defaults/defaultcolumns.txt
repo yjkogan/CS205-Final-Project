@@ -1,1 +1,1 @@
-{'SchoolName':7,'State':2,'Grades':11}
+{'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}

@@ -23,6 +23,10 @@ columns = open(args.columnsfile,'r')
 colstring = 'coldict = ' + columns.read()
 tempfiletext = st.replace(tempfiletext,'#coldict_placeholder#',colstring)
 
+filenamestring = 'filename = \"' + args.database + "\""
+tempfiletext = st.replace(tempfiletext,'#filename_placeholder#',\
+                             filenamestring)
+
 #Create a temporary script to run using the new script we have dynamically
 #generated.
 print "Creating temporary script file tempscript.py\n"
@@ -37,6 +41,8 @@ start = time.time()
 #Do this because it makes print statements (in the mapper) work
 if(args.debug):
    subprocess.call(['python','tempscript.py',args.database,'--mapper'])
+elif(args.emr):
+   subprocess.call(['python','tempscript.py','-r','emr',args.database])
 else:
    subprocess.call(['python','tempscript.py',args.database])
 

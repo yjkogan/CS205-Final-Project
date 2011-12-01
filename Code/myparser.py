@@ -21,3 +21,4 @@ parser.add_argument('-c','--columnsfile',default=def_col_path)
 parser.add_argument('teacher')
 #If -d or --debug is on the command line, turn on debug mode
 parser.add_argument('-d','--debug',action='store_true',default=False)
+parser.add_argument('-emr',action='store_true',default=False)
