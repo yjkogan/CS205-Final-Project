@@ -17,9 +17,11 @@ filetext =  file.read()
 database = csv.reader(open(args.database,'r'))
 scoreDict = {}
 
+start = time.time()
 
 for row in database:
 	#Fill in teacherlist variable
+	currentID = eval(row[0])
 	teacherstring = 'teacherlist = ' + str(row)
 	tempfiletext = st.replace(filetext,'#teacherlist_placeholder#',teacherstring)
 
@@ -35,7 +37,6 @@ for row in database:
 	tempfile.write(tempfiletext)
 	tempfile.close()
 
-	start = time.time()
 	#run the map_reduce job
 
 	#If debugging mode is on, just run the mapper
@@ -47,14 +48,20 @@ for row in database:
            while True:
 		line = proc.stdout.readline()
 		if line != '':
-			result = eval(re.search('\\t(.*)\\n',line).group(0)) # gets the list from stdout
+			result = eval(re.search('\\t(.*)\\n',line).group(0)) # gets the list of comparison from stdout
 			for k,v in result: # k,v is teacherID, score
-				if (k not in scoreDict):
-					scoreDict[k] = v
+				keyTuple = tuple(sorted([k,currentID])) # makes sorted tuple of the currentID and the ID being compared to to use as key
+				if (keyTuple not in scoreDict):
+					scoreDict[keyTuple] = v
+			# print scoreDict
 		else:
 			break
 
-	print "It took %f seconds to run the map_reduce job" % (time.time() - start)	
 	print "Cleaning up..."
 	print "    Removing tempscript.py"
 	subprocess.call(['rm','tempscript.py'])
+
+print "It took %f seconds to build the dictionary." % (time.time() - start)
+dictDump = open('scoreDict.txt','w')
+dictDump.write(tempfiletext)
+dictDump.close()
