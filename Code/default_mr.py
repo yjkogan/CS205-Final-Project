@@ -15,6 +15,10 @@ from collections import defaultdict
 #Updated dynamically by wrapper python script 'mr_launcher.py'
 #coldict_placeholder#
 
+#Placeholder for the filename variable.
+#Updated dynamically by wrapper python script 'mr_launcher.py'
+#filename_placeholder#
+
 #Function to calculate the similarity score
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
@@ -32,22 +36,23 @@ def get_score(teacher,tocompare):
                 scoredict[c]=score
                 scoreval += score
                 num_cats_compared += 1
-        if(c == 'State'):
+        elif(c == 'State'):
             score = scr.compState(teacher[v],tocompare[v])
             if(score != None):
                 scoredict[c]=score
                 scoreval += score
                 num_cats_compared += 1
-        if(c == 'Grades'):
+        elif(c == 'Grades'):
             score = scr.compGrades(teacher[v],tocompare[v])
             if(score != None):
                 scoredict[c]=score
                 scoreval += score
                 num_cats_compared += 1
 
-    '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/... 
+    '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
     find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
-    #Inverts the dictionary (swaps keys and values) so that we can get the max value
+    #Inverts the dictionary (swaps keys and values) so that we can 
+    #get the max value
     temp = dict(map(lambda scores: (scores[1],scores[0]),scoredict.items()))
     #Gets the largest contributor to score. Ties are broken arbitrarily
     try:
@@ -55,12 +60,13 @@ def get_score(teacher,tocompare):
     except ValueError:
         largestcontributor = None
     
-    #Returns a tuple of the score and the number of meaningful comparisons that happened
+    #Returns a tuple of the score and the number of meaningful comparisons
+    
     return (round(scoreval,5),num_cats_compared)
 
-class MyWordCount(MRJob):
+class MySimTeachers(MRJob):
     def __init__(self,*args,**kwargs):
-        super(MyWordCount,self).__init__(*args,**kwargs)
+        super(MySimTeachers,self).__init__(*args,**kwargs)
         #List to keep track of the teachers we have compared
         self.comparedts = []
         #The teacher we are comparing
@@ -74,11 +80,14 @@ class MyWordCount(MRJob):
         row = value.split(',')
         #calculate the score
         score = get_score(self.teacher,row)
-        #Add this score to the list of teachers. If no meaningful comparisons happened, add 0
+        #Add this score to the list of teachers.
+        #If no meaningful comparisons happened, add 0
         try:
-            self.comparedts.append((row[:3],score[0]/score[1]))
+            self.comparedts.append((int(row[0]),score[0]/score[1]))
         except ZeroDivisionError:
-            self.comparedts.append((row[:3],0))
+            self.comparedts.append((int(row[0]),0))
+        except ValueError:
+            pass
 
     def mapper_final(self):
         #yield the top ten most similar teachers
@@ -96,8 +105,8 @@ class MyWordCount(MRJob):
 
 if __name__ == '__main__':
     # launch the job!
-#    mr_job = MyWordCount(args=[filename,])
-    mr_job = MyWordCount()
+#    mr_job = MySimTeachers(args=[filename,])
+    mr_job = MySimTeachers()
     mr_job.run()
 
 
