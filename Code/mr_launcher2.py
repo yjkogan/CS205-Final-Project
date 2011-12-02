@@ -27,7 +27,7 @@ start = time.time()
 
 # for debugging
 counter = 0
-RUNCOUNT = 2
+RUNCOUNT = 100
 
 # does logging stuff
 def logStuff(filename, text):
@@ -65,8 +65,8 @@ for row in database:
 	   proc = subprocess.Popen(['python','tempscript.py',args.database,'--mapper'],stdout=subprocess.PIPE)
 	else:
            #proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
-	   proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
-	   # proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr'],stdout=subprocess.PIPE)
+           #proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+	   proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr','--jobconf','mapred.map.tasks=4'],stdout=subprocess.PIPE)
            while True:
 		line = proc.stdout.readline()
 		if line != '':
@@ -75,7 +75,7 @@ for row in database:
 				keyTuple = tuple(sorted([k,currentID])) # makes sorted tuple of the currentID and the ID being compared to to use as key
 				if (keyTuple not in scoreDict):
 					scoreDict[keyTuple] = v
-			# print scoreDict
+                        print scoreDict
 		else:
 			break
 
