@@ -96,11 +96,9 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
-        #calculate the score for teachers with higher IDs
-	if (self.teacher[0] >= row[0]):
-		return
-	score = get_score(self.teacher,row)
-	#Add this score to the list of teachers.
+        #calculate the score
+        score = get_score(self.teacher,row)
+        #Add this score to the list of teachers.
         #If no meaningful comparisons happened, add 0
         try:
             self.comparedts.append((int(row[0]),score[0]/score[1]))
@@ -112,7 +110,7 @@ class MySimTeachers(MRJob):
     def mapper_final(self):
         #yield the top ten most similar teachers
         yield None, sorted(self.comparedts,\
-                               key=(lambda x: x[1]),reverse=True)[:10]
+                               key=(lambda x: x[1]),reverse=True)
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)
@@ -120,7 +118,7 @@ class MySimTeachers(MRJob):
         allcompared = []
         for value in values:
             allcompared.extend(value)
-        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)
+        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)[:10]
 
 
 if __name__ == '__main__':

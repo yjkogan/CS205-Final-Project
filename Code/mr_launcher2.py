@@ -21,7 +21,7 @@ start = time.time()
 
 # for debugging
 counter = 0
-RUNCOUNT = 2
+RUNCOUNT = 10
 
 # does logging stuff
 def logStuff(filename, text):
