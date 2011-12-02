@@ -19,6 +19,16 @@ scoreDict = {}
 
 start = time.time()
 
+# for debugging
+counter = 0
+RUNCOUNT = 2
+
+# does logging stuff
+def logStuff(filename, text):
+	log = open(filename,'a')
+	log.write(text)
+	log.close()
+
 for row in database:
 	#Fill in teacherlist variable
 	currentID = eval(row[0])
@@ -60,8 +70,12 @@ for row in database:
 	print "Cleaning up..."
 	print "    Removing tempscript.py"
 	subprocess.call(['rm','tempscript.py'])
+	counter += 1
+	if (counter == RUNCOUNT):
+		break
 
-print "It took %f seconds to build the dictionary." % (time.time() - start)
-dictDump = open('scoreDict.txt','w')
-dictDump.write(tempfiletext)
-dictDump.close()
+runtime = time.time() - start
+print 'It took {0} seconds to build the dictionary for {1} teachers.'.format(runtime, RUNCOUNT)
+print 'The average runtime per teacher was {0} seconds'.format(runtime/RUNCOUNT)
+# logStuff('scoreDict.txt', str(scoreDict))
+logStuff('perfLog.txt', str(RUNCOUNT) + ',' + str(runtime) + ',' + str(runtime/RUNCOUNT) + '\n') # writes teachers run, agg runtime, and avg runtime as a csv
