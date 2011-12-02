@@ -15,6 +15,11 @@ margin-left:auto;
 margin-right:auto;
 }
 
+.fig {
+    display: block;
+    margin-left: auto;
+    margin-right: auto }
+
 .centered { margin-left:auto;
 margin-right:auto;width:80%;}
 
