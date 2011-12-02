@@ -15,6 +15,9 @@ margin-left:auto;
 margin-right:auto;
 }
 
+.centered { margin-left:auto;
+margin-right:auto;width:80%;}
+
 /* Site
    -------------------------------- */
 
@@ -200,7 +203,10 @@ div.demo {
 	font-family: "Trebuchet MS", "Arial", "Helvetica", "Verdana", "sans-serif";
 }
 
-div.demo h3.docs { clear:left; font-size:12px; font-weight:normal; padding:0 0 1em; margin:0; }
+div.demo { clear:left; font-size:12px; font-weight:normal; padding:0 0 1em; margin:0; margin-left:auto;
+margin-right:auto;}
+
+h3.docs { clear:left; font-size:12px; font-weight:normal; padding:0 0 1em; margin:0; }
 
 div.demo-description {
 	clear:both;
