@@ -1,3 +1,13 @@
+'''
+This script loads in the requested script (given as argument scripttorun)
+and replaces some placeholders with information provided in other files.
+This gives us a flexible way to change code by creating temporary files
+with "hard-coded" values for the teacher we want to compare against the rest of
+the database and for the column number of each field. The script
+then creates a temporary file, runs it, and then removes that file.
+'''
+
+
 import subprocess,time,sys
 import string as st
 from myparser import parser
@@ -42,7 +52,7 @@ start = time.time()
 if(args.debug):
    subprocess.call(['python','tempscript.py',args.database,'--mapper'])
 elif(args.emr):
-   subprocess.call(['python','tempscript.py','-r','emr',args.database])
+   subprocess.call(['python','tempscript.py','-r','emr',args.database,'--file=comparisons.pyc'])
 else:
    subprocess.call(['python','tempscript.py',args.database])
 
@@ -50,4 +60,4 @@ print "It took %f seconds to run the map_reduce job" % (time.time() - start)
 
 print "Cleaning up..."
 print "    Removing tempscript.py"
-subprocess.call(['rm','tempscript.py'])
+#subprocess.call(['rm','tempscript.py'])

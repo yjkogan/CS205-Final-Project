@@ -123,7 +123,7 @@ coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'D
 
 #Placeholder for the filename variable.
 #Updated dynamically by wrapper python script 'mr_launcher.py'
-filename = "../RawData/betterlesson.hcs_user_export.csv"
+filename = "../RawData/larger_dataset.csv"
 
 #Function to calculate the similarity score
 def get_score(teacher,tocompare):
@@ -196,7 +196,11 @@ comparedts = []
 # with the default name (mapper)
 reader = csv.reader(open(filename,'r'))
 start = time.time()
+i=0
 for t in reader:
+   i+= 1
+   if(i%100000)==0:
+      print i
    score = get_score(teacherlist,t)
    try:
       comparedts.append((int(t[0]),score[0]/score[1]))
@@ -204,7 +208,7 @@ for t in reader:
       comparedts.append((int(t[0]),0))
    except ValueError:
       pass
-print time.time() - start
+timetaken = time.time() - start
 print sorted(comparedts,key=(lambda x: x[1]),reverse=True)
-
+print timetaken
 
