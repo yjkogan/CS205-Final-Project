@@ -2,6 +2,7 @@ import subprocess,time,sys,csv
 import string as st
 from myparser import parser
 import re
+import time
 
 #parse the command line arguments
 args = parser.parse_args()
@@ -26,7 +27,7 @@ start = time.time()
 
 # for debugging
 counter = 0
-RUNCOUNT = 10
+RUNCOUNT = 2
 
 # does logging stuff
 def logStuff(filename, text):
@@ -63,8 +64,9 @@ for row in database:
 	if(args.debug):
 	   proc = subprocess.Popen(['python','tempscript.py',args.database,'--mapper'],stdout=subprocess.PIPE)
 	else:
-           proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
-	   #proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+           #proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
+	   proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+	   # proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr'],stdout=subprocess.PIPE)
            while True:
 		line = proc.stdout.readline()
 		if line != '':
@@ -88,4 +90,4 @@ runtime = time.time() - start
 print 'It took {0} seconds to build the dictionary for {1} teachers.'.format(runtime, RUNCOUNT)
 print 'The average runtime per teacher was {0} seconds'.format(runtime/RUNCOUNT)
 # logStuff('scoreDict.txt', str(scoreDict))
-logStuff('perfLog.txt', str(RUNCOUNT) + ',' + str(runtime) + ',' + str(runtime/RUNCOUNT) + '\n') # writes teachers run, agg runtime, and avg runtime as a csv
+logStuff('perfLog.csv', str(RUNCOUNT) + ',' + str(runtime) + ',' + str(runtime/RUNCOUNT) + ',' + time.strftime('%X %x %Z') +'\n') # writes teachers run, agg runtime, and avg runtime as a csv, and current time
