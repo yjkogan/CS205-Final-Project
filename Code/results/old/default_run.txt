@@ -1,0 +1,9 @@
+Machine: 16 Small instances
+
+Time: 67.0 seconds
+
+Num Passed: 10 most similar
+Num Returned: 10 most similar
+
+Output:
+null	[[38, 1.0], [157, 1.0], [487, 1.0], [3969, 1.0], [4114, 1.0], [5571, 1.0], [5635, 1.0], [5638, 1.0], [5647, 1.0], [5654, 1.0]]
