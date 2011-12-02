@@ -1,10 +1,18 @@
 body {
-	font-size: 62.5%;
+	font-size: 80%;
 	background-color:#eeeeee;
 }
 
 table {
 	font-size: 1em;
+}
+
+.samplecode {
+border: 1px solid #000000;
+padding: 5px;
+width: 80%;
+margin-left:auto;
+margin-right:auto;
 }
 
 /* Site
