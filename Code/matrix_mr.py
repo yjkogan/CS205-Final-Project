@@ -48,6 +48,24 @@ def get_score(teacher,tocompare):
                 scoredict[c]=score
                 scoreval += score
                 num_cats_compared += 1
+        elif(c == 'Subjects'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Courses'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Units'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
 
     '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
     find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
