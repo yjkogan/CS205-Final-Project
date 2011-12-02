@@ -14,6 +14,7 @@
 		$( "#tabs" ).tabs();
 	});
 	</script>
+
 </head>
 <body>
 
@@ -37,9 +38,18 @@
 		<li><a href="#tabs-6">Insights</a></li>
 		<li><a href="#tabs-7">Extensions</a></li>
 		<li><a href="#tabs-8">Reflection</a></li>
+		<li><a href="#tabs-9">Video</a></li>
 	</ul>
 	<div id="tabs-1">
-		<p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+		<p><img src="img/teacher.jpg" /></p>
+
+		<p>An identified problem in primary and secondary education is that it is often necessary for teachers to spend an inordinate amount of time creating lesson plans that most likely have already been created and refined by similar teachers, rather than focusing on increasing individual student performance. This is because there is no efficient or standardized way to share and peer review lesson plans.</p>
+
+		<p><a href="http://betterlesson.com">BetterLesson</a> is a Boston-based startup that seeks "to connect educators and help them create, organize, and share their curricula." They have collected a large database of teachers, lesson plans, and related metadata. In order to help teachers identify relevant lesson plans, BetterLesson hopes to direct teachers to other educators who share similar content areas and teaching styles.</p>
+
+		<p>This recommendation engine needs to be fast against a increasingly large dataset.</p>
+
+		<p>The focus of this project is minimizing the latency that a user of BetterLessons experiences when searching for similar teachers and lesson plans.</p>
 	</div>
 	<div id="tabs-2">
 		<p><img src="img/betterlesson.png" /></p>
@@ -48,9 +58,15 @@
 
 <p class="samplecode"><samp>13,Alex,MA,9/5/2008 15:58,7115874,456,3142,Roxbury Prep Middle School,Social Studies | English / Language Arts | Writing | Listening and Speaking,Roxbury Prep 6th Grade English | Brown Social Studies | Grammar and Mechanics,Intro to Nouns and Verbs | Formal Writing Assignments | World War II | Nouns and Verbs | Nouns and Adjectives | Adjectives and Adverbs | Advertising Project | Autobiography Writing Project | How to Write a Business Letter | Time For Kids | Commonly Misused Words | Creative Writing Assignments | Writing Rubrics | Paragraph Structure | Assorted Grammar | Sentence Types | Figurative Language,Sixth grade | Seventh grade | Eighth Grade</samp></p>
 
-<p>The goal was to use a mapper to generate a "similarity" score between every pair of rows in order to recommend the most similar teachers for collaborative purposes. To this end, we also generated two variations of the dataset. <samp>reshaped_coarsegrained_mapper_user_export.csv</samp> provides the same data, but each cell is a 5-tuple:</p>
+<p>The goal was to use a mapper to generate a "similarity" score between every pair of rows in order to recommend the most similar teachers for collaborative purposes. To this end, we also generated two variations of the dataset. <samp>reshaped_coarsegrained_mapper_user_export.csv</samp> provides the same data, but each cell is a 5-tuple to reduce the frequency that data is transferred between the devices and mappers/reducers:</p>
 
 <p class="samplecode"><samp>(13,14,15,16,17),(Alex,John,Steve,Kim,Kyle),(MA,MA,NY,MA,TX)... (Seventh grade | Eighth Grade, Fifth Grade | Eighth Grade, Sixth Grade, Fifth Grade | Sixth Grade, Eighth Grade)</samp></p>
+
+<p>The second variation of data we created was <samp>reshaped_finegrained_mapper_user_export.csv</samp>, in which each row as the format <samp>UID,[column name],[value]</samp>. This results in ten rows of data per teacher. The purpose of this dataset is so that each mapper has to do less work because it only computes the score based on one column; however, more mappers are needed to do the full computation. Thus, this dataset is advantageous only when mappers are cheap:</p>
+
+<p class="samplecode"><samp>13,firstName,Alex<br />13,state,MA<br />13,school,Roxbury Prep Middle School<br />...<br />16,name,Kim<br />...<br />16,grades,Fifth Grade | Sixth Grade<br />...</samp></p>
+
+<p>Performance on Amazon EMR small instances are discussed in the <b>Performance</b> section.</p>
 
 	</div>
 	<div id="tabs-3">
@@ -73,6 +89,10 @@
 		<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
 	</div>
 	<div id="tabs-8">
+		<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+		<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+	</div>
+	<div id="tabs-9">
 		<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
 		<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
 	</div>
