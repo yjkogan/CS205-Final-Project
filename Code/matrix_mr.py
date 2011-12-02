@@ -48,6 +48,24 @@ def get_score(teacher,tocompare):
                 scoredict[c]=score
                 scoreval += score
                 num_cats_compared += 1
+        elif(c == 'Subjects'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Courses'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Units'):
+            score = scr.compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
 
     '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
     find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
@@ -92,7 +110,7 @@ class MySimTeachers(MRJob):
     def mapper_final(self):
         #yield the top ten most similar teachers
         yield None, sorted(self.comparedts,\
-                               key=(lambda x: x[1]),reverse=True)[:10]
+                               key=(lambda x: x[1]),reverse=True)
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)
@@ -100,7 +118,7 @@ class MySimTeachers(MRJob):
         allcompared = []
         for value in values:
             allcompared.extend(value)
-        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)[:10]
+        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)
 
 
 if __name__ == '__main__':
