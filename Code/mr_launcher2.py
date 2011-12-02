@@ -63,8 +63,8 @@ for row in database:
 	if(args.debug):
 	   proc = subprocess.Popen(['python','tempscript.py',args.database,'--mapper'],stdout=subprocess.PIPE)
 	else:
-           proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
-	   #proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+           #proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
+	   proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr'],stdout=subprocess.PIPE)
            while True:
 		line = proc.stdout.readline()
 		if line != '':
