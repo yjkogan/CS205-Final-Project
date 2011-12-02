@@ -226,7 +226,7 @@
         SCORE]</samp> is a score on the scale of 0-1 as generated
         by the functions in <samp>comparisons.py</samp> (see
         <b>Design</b> for more information). The dictionary allows
-        for constsant time lookup of the similarity of any two
+        for constant time lookup of the similarity of any two
         teachers, and an <samp><i>n</i>log<i>n</i></samp> lookup of
         the top X similar teachers for any given teacher.</p>
       </div>
@@ -247,16 +247,16 @@
           <li>The serial approach took <b>483 seconds</b>.</li>
 
           <li>The simplistic approach, in which each mapper
-          generates each teacher's score across every data column
-          across every other teacher, took <b>327 seconds</b>.</li>
+          generates the teacher's score across every data column
+          of another teacher, took <b>327 seconds</b>.</li>
 
           <li>The fine grained apprach, in which each mapper
-          generates each teacher's score across one data column
-          across every other teacher, took <b>590 seconds</b>.</li>
+          generates the teacher's score across one data column
+          of another teacher, took <b>590 seconds</b>.</li>
 
           <li>The coarse grained apprach, in which each mapper
           generates each 5-tuple of teachers' score across every
-          data column across every other teacher, took <b>1087
+          data column of another teacher, took <b>1087
           seconds</b>.</li>
 		</ul>
 		
@@ -264,6 +264,12 @@
 		
 		<p>ANALYSIS WHY DID IT SLOW DOWN BLAHBLAHBALH</p>
 
+			<p>We also tried a different approach, in which we use map-reduce to initially build the entire matrix of teacher-teacher similarity scores and save it as a dictionary with the entry format
+        <samp>(id1,id2) : [SCORE]</samp>. The dictionary allows
+        for constsant time lookup of the similarity of any two
+        teachers, and an <samp><i>n</i>log<i>n</i></samp> lookup of
+        the top X similar teachers for any given teacher</p>
+			
             <p>DICTIONARY BUILDING - graph + analysis</p>
 
             <p>CONCLUSIONS - do not build entire dictionary at once
