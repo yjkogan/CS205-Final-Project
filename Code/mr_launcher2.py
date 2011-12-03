@@ -4,33 +4,28 @@ from myparser import parser
 import re
 import time
 
-#parse the command line arguments
+# parse the command line arguments
 args = parser.parse_args()
 
-'''The next several lines of code take the script we want to run and
-fill in the variables teacherlist and coldict using the data stored
-in the files provided on the command line. To do this, it does a string
-replacement on specific placeholder strings in the script, in particular
-'#teacherlist_placeholder#' and '#coldict_placeholder#'.'''
-
+# read dataset
 file = open(args.scripttorun,'r')
 filetext =  file.read()
 file.close()
 inputfile = csv.reader(open(args.inputfile,'r'))
 scoreDict = {}
 
-start = time.time()
-
 # for debugging
 counter = 0
 RUNCOUNT = 20
+start = time.time()
 
-# does logging stuff
-def logStuff(filename, text):
-	log = open(filename,'a')
+# takes two strings, and write text to file named filename, with mode mode
+def logStuff(filename, text, mode):
+	log = open(filename, mode)
 	log.write(text)
 	log.close()
 
+# iterate over every row in the csv
 for row in inputfile:
 	#Fill in teacherlist variable
 	currentID = eval(row[0])
@@ -51,17 +46,17 @@ for row in inputfile:
 	if(args.debug):
 	   proc = subprocess.Popen(['python','tempscript.py',args.database,'--mapper'],stdout=subprocess.PIPE)
 	else:
-           proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+       proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
 	   #proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr','--jobconf','mapred.map.tasks=4'],stdout=subprocess.PIPE)
-           while True:
+       while True:
+		# this bit of code reads from tempscript's stoud
 		line = proc.stdout.readline()
 		if line != '':
-			result = eval(re.search('\\t(.*)\\n',line).group(0)) # gets the list of comparison from stdout
+			result = eval(re.search('\\t(.*)\\n',line).group(0)) # gets the list of comparisons from stdout w regex
 			for k,v in result: # k,v is teacherID, score
 				keyTuple = tuple(sorted([k,currentID])) # makes sorted tuple of the currentID and the ID being compared to to use as key
 				if (keyTuple not in scoreDict):
-					scoreDict[keyTuple] = v
-                        #print scoreDict
+					scoreDict[keyTuple] = v # set new score
 		else:
 			break
 
@@ -79,5 +74,6 @@ for row in inputfile:
 runtime = time.time() - start
 print 'It took {0} seconds to build the dictionary for {1} teachers.'.format(runtime, RUNCOUNT)
 print 'The average runtime per teacher was {0} seconds'.format(runtime/RUNCOUNT)
-# logStuff('scoreDict.txt', str(scoreDict))
-logStuff('perfLog.csv', str(RUNCOUNT) + ',' + str(runtime) + ',' + str(runtime/RUNCOUNT) + ',' + time.strftime('%X %x %Z') +'\n') # writes teachers run, agg runtime, and avg runtime as a csv, and current time
+# logStuff('scoreDict.txt', str(scoreDict),'w')
+# writes teachers run, agg runtime, avg runtime, and current time as a csv
+logStuff('perfLog.csv', str(RUNCOUNT) + ',' + str(runtime) + ',' + str(runtime/RUNCOUNT) + ',' + time.strftime('%X %x %Z') +'\n', 'a')
