@@ -119,8 +119,9 @@ teacherlist = ["38","Jason","MA","11/9/2008 20:41","8043176","662","7231","Grove
 #Updated dynamically by wrapper python script 'mr_launcher.py'
 coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
-
 #Function to calculate the similarity score
+funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
+
 def get_score(teacher,tocompare):
     c = tocompare[0]
     valtocomp = tocompare[1]
@@ -129,40 +130,15 @@ def get_score(teacher,tocompare):
     scoreval = 0
     #keeps track of the number of meaningful comparisons
     num_cats_compared = 0
+    #keeps track of the contributions of each characteristic
     #iterates through the different columns we want to compare
-    if(c == 'SchoolName'):
-        score = compSchool(teacher[v],valtocomp)
-        #If a meaningful comparison happened, update the score trackers
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    elif(c == 'State'):
-        score = compState(teacher[v],valtocomp)
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    elif(c == 'Grades'):
-        score = compGrades(teacher[v],valtocomp)
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    elif(c == 'Subjects'):
-        score = compGrades(teacher[v],valtocomp)
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    elif(c == 'Units'):
-        score = compGrades(teacher[v],valtocomp)
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    elif(c == 'Courses'):
-        score = compGrades(teacher[v],valtocomp)
-        if(score != None):
-            scoreval += score
-            num_cats_compared += 1
-    else:
-        return None
+    score = None
+    if c in funcs:
+        score = funcs[c](teacher[v],valtocomp)
+    #If a meaningful comparison happened, update the score trackers
+    if(score != None):
+        scoreval += score
+        num_cats_compared += 1
 
     #Returns a tuple of the score and the number of meaningful comparisons
     return (round(scoreval,5),num_cats_compared)
@@ -188,32 +164,28 @@ class MyWordCount(MRJob):
         #Add this score to the list of teachers.
 #        if id == 38 and score[0] == 0. and score[1]==1:
         if(score != None):
-            self.scores[id].append((score[0],row[1]))
-            self.numcompared[id]+=score[1]
+                self.scores[id].append(score[0])
+                self.numcompared[id]+=score[1]
 
     def mapper_final(self):
         #yield the top ten most similar teachers
-        for id,scores in self.scores.iteritems():
-            def add(a,b):
-                return a+b[0]
-            score = reduce(add,scores,0)
-            largest_contributor =  max(scores)[1]
-            if score != 0:
-                yield id,(score/self.numcompared[id],largest_contributor)
+            for t,scores in self.scores.iteritems():
+                    score = reduce((lambda x,y:x+y),scores,0)
+                    if score != 0:
+                            yield t,score/len(scores)
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)
     def reducer(self, key, values):
         totalscore = 0
-        lrgst_contribs = []
+        denom = 0
         for score in values:
-            totalscore += score[0]
-            lrgst_contribs.append((score[0],score[1]))
-        yield key,(totalscore,max(lrgst_contribs)[1])
+            totalscore += score
+            denom += 1
+        yield key,totalscore/denom
 
 if __name__ == '__main__':
     # launch the job!
-#    mr_job = MyWordCount(args=[filename,])
     mr_job = MyWordCount()
     mr_job.run()
 
