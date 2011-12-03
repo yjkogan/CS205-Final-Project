@@ -223,24 +223,23 @@
         <p>It is apparent here that our simplistic mapper approach took the least time to
         generate all the scores for one teacher row across the large dataset. The
         implication here is that it is more costly for a mapper to do a lot of work than
-        it is to pass more data. Alternatively, the anemic EC2 <a href=
-        "http://aws.amazon.com/ec2/instance-types/">small instance</a> is experiencing a
-        lot of cache-thrashing on our dataset.</p>
+        it is to pass more data.</p>
 
         <p>We also benchmarked all of our implementations against datasets of various
         sizes to see how performance varies across the size of the input data. The
         following results were obtained using 16 small instances on Amazon EMR:</p>
 
         <p><img class="fig" src="img/fig2.jpg" /></p>
+		
+		<p>As expected, the advantage of using map-reduce manifests as the dataset gets larger. This is apparent with our simple mapper, and the fine mapper performance is approaching that of the serial mapper for our full dataset. Inferring from the trend lines, we can expect that the fine mapper will outperform the serial implementation if we double the datasize again.</p>
+		<p>We were confused and concerned by the degenerating performance of the coarse grain mapper, whose run time increased exponentially every time we doubled the dataset size. This was worse than the serial implementation. We hypothesized that this was the result of caching and memory limitations on the anemic small EC2 instances that only affected our coarse mapper because of its much larger line size. To explore this hypothesize, we fixed the number of instances at 16 but launched our coarse mapper on a large EC2 instance.</p>
 
-        <p>We also tried a different approach, in which we use map-reduce to initially
+		<p>We also tried a different approach, in which we use map-reduce to initially
         build the entire matrix of teacher-teacher similarity scores and save it as a
         dictionary with the entry format <samp>(id1,id2) : [SCORE]</samp>. The dictionary
-        allows for constsant time lookup of the similarity of any two teachers, and an
+        allows for constant time lookup of the similarity of any two teachers, and an
         <samp><i>n</i>log<i>n</i></samp> lookup of the top X similar teachers for any
-        given teacher</p>
-
-        <p>DICTIONARY BUILDING - graph + analysis</p>
+        given teacher. We tested our upper-triangle dictionary builder (see <b>Design</b>) on 20 rows, which built a 6 * 1<samp>E</samp>6 by 20 matrix. This ran in 18760 seconds, or an average of 938 seconds per row; however, this time was largely dominated by the time required to launch an EC2 instance for every row. The implication here is that a <samp>for</samp> loop to launch mappers for the rows is a nonideal design.</p>
 
         <p>CONCLUSIONS - do not build entire dictionary at once initially (unless you
         have super fast computers). Rather, save each dictionary row on the intial check
