@@ -24,7 +24,8 @@ parser.add_argument('database')
 #File where we can find a dictionary relating fields and column number
 parser.add_argument('-c','--columnsfile',default=def_col_path)
 #File where we can find the teacher we are comparing
-parser.add_argument('teacher')
+parser.add_argument('inputfile')
+parser.add_argument('-t','--teacher')
 #If -d or --debug is on the command line, turn on debug mode
 parser.add_argument('-d','--debug',action='store_true',default=False)
 #If -emr is given then run the script on amazon

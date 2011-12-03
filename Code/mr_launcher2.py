@@ -13,21 +13,17 @@ in the files provided on the command line. To do this, it does a string
 replacement on specific placeholder strings in the script, in particular
 '#teacherlist_placeholder#' and '#coldict_placeholder#'.'''
 
-comparisons = open("comparisons.py",'r')
-filetext = comparisons.read()
-comparisons.close()        
-
 file = open(args.scripttorun,'r')
-filetext +=  file.read()
+filetext =  file.read()
 file.close()
-database = csv.reader(open(args.database,'r'))
+inputfile = csv.reader(open(args.inputfile,'r'))
 scoreDict = {}
 
 start = time.time()
 
 # for debugging
 counter = 0
-RUNCOUNT = 100
+RUNCOUNT = 20
 
 # does logging stuff
 def logStuff(filename, text):
@@ -35,20 +31,11 @@ def logStuff(filename, text):
 	log.write(text)
 	log.close()
 
-for row in database:
+for row in inputfile:
 	#Fill in teacherlist variable
 	currentID = eval(row[0])
 	teacherstring = 'teacherlist = ' + str(row)
 	tempfiletext = st.replace(filetext,'#teacherlist_placeholder#',teacherstring)
-
-	#Fill in the coldict variable
-	columns = open(args.columnsfile,'r')
-	colstring = 'coldict = ' + columns.read()
-	tempfiletext = st.replace(tempfiletext,'#coldict_placeholder#',colstring)
-        filenamestring = 'filename = \"' + args.database + "\""
-        tempfiletext = st.replace(tempfiletext,'#filename_placeholder#',\
-                                          filenamestring)
-
 
 	#Create a temporary script to run using the new script we have dynamically
 	#generated.
@@ -64,9 +51,8 @@ for row in database:
 	if(args.debug):
 	   proc = subprocess.Popen(['python','tempscript.py',args.database,'--mapper'],stdout=subprocess.PIPE)
 	else:
-           #proc = subprocess.Popen(['python','tempscript.py'],stdout=subprocess.PIPE)
-           #proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
-	   proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr','--jobconf','mapred.map.tasks=4'],stdout=subprocess.PIPE)
+           proc = subprocess.Popen(['python','tempscript.py',args.database],stdout=subprocess.PIPE)
+	   #proc = subprocess.Popen(['python','tempscript.py',args.database,'-r','emr','--jobconf','mapred.map.tasks=4'],stdout=subprocess.PIPE)
            while True:
 		line = proc.stdout.readline()
 		if line != '':
@@ -75,7 +61,7 @@ for row in database:
 				keyTuple = tuple(sorted([k,currentID])) # makes sorted tuple of the currentID and the ID being compared to to use as key
 				if (keyTuple not in scoreDict):
 					scoreDict[keyTuple] = v
-                        print scoreDict
+                        #print scoreDict
 		else:
 			break
 
@@ -83,6 +69,10 @@ for row in database:
 	print "    Removing tempscript.py"
 	subprocess.call(['rm','tempscript.py'])
 	counter += 1
+        # print counter
+        # byn = raw_input("Would you like to continue? (y/n)")
+        # if(byn == 'n'):
+        #         break
 	if (counter == RUNCOUNT):
 		break
 
