@@ -104,7 +104,7 @@ def compVerbatim(string1, string2):
 ################################################################################
 
 #import necessary modules
-import sys,time
+import sys
 import random as rand
 
 # import MRJob class
@@ -121,12 +121,11 @@ teacherlist = ["38","Jason","MA","11/9/2008 20:41","8043176","662","7231","Grove
 coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
 
-#Placeholder for the filename variableo.
+#Placeholder for the filename variable.
 #Updated dynamically by wrapper python script 'mr_launcher.py'
 filename = "../RawData/betterlesson.hcs_user_export.csv"
 
-funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
-
+#Function to calculate the similarity score
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
     scoredict = {}
@@ -148,8 +147,6 @@ def get_score(teacher,tocompare):
     #Returns a tuple of the score and the number of meaningful comparisons
     return (round(scoreval,5),num_cats_compared)
 
-rowlen = 19
-
 class MySimTeachers(MRJob):
     def __init__(self,*args,**kwargs):
         super(MySimTeachers,self).__init__(*args,**kwargs)
@@ -164,24 +161,22 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
-        num_teachers = len(row)/rowlen
         #calculate the score
-        # for t in xrange(num_teachers):
-        #    score = get_score(self.teacher,row[t*rowlen:(t+1)*rowlen])
-        for t in xrange(5):
-                score = get_score(self.teacher,row)
-        # score = get_score(self.teacher,row)
+        score = get_score(self.teacher,row)
         print len(self.comparedts)
         #Add this score to the list of teachers.
         #If no meaningful comparisons happened, add 0
         try:
-                self.comparedts.append((int(row[0]),score[0]/score[1]))
+           yield key,(int(row[0]),score[0]/score[1])
         except ZeroDivisionError,ValueError:
-                pass
+           pass
 
-    def mapper_final(self):
+    def combiner(self,key,scores):
         #yield the top ten most similar teachers
-        yield None, sorted(self.comparedts,\
+       allscores = []
+       for score in scores:
+          allscores.extend(score)
+       yield key, sorted(allscores,\
                                key=(lambda x: x[1]),reverse=True)[:10]
 
     # override pre-defined reducer by creating a generator
@@ -195,5 +190,11 @@ class MySimTeachers(MRJob):
 
 if __name__ == '__main__':
     # launch the job!
+#    mr_job = MySimTeachers(args=[filename,])
     mr_job = MySimTeachers()
     mr_job.run()
+
+
+# Combiner instead of mapper_final
+# Less computationally intensive mappers
+# More computationally intensive

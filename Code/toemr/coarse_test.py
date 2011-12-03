@@ -166,18 +166,14 @@ class MySimTeachers(MRJob):
         row = value.split(',')
         num_teachers = len(row)/rowlen
         #calculate the score
-        # for t in xrange(num_teachers):
-        #    score = get_score(self.teacher,row[t*rowlen:(t+1)*rowlen])
-        for t in xrange(5):
-                score = get_score(self.teacher,row)
-        # score = get_score(self.teacher,row)
-        print len(self.comparedts)
+        for t in xrange(num_teachers):
+           score = get_score(self.teacher,row[t*rowlen:(t+1)*rowlen])
         #Add this score to the list of teachers.
         #If no meaningful comparisons happened, add 0
-        try:
-                self.comparedts.append((int(row[0]),score[0]/score[1]))
-        except ZeroDivisionError,ValueError:
-                pass
+           try:
+              self.comparedts.append((int(row[0]),score[0]/score[1]))
+           except ZeroDivisionError,ValueError:
+              pass
 
     def mapper_final(self):
         #yield the top ten most similar teachers
