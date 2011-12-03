@@ -248,21 +248,21 @@
 
           <li>The simplistic approach, in which each mapper
           generates the teacher's score across every data column
-          of another teacher, took <b>327 seconds</b>.</li>
+          of another teacher and returns the top 10, took <b>327 seconds</b>.</li>
 
           <li>The fine grained apprach, in which each mapper
           generates the teacher's score across one data column
           of another teacher, took <b>590 seconds</b>.</li>
 
           <li>The coarse grained apprach, in which each mapper
-          generates each 5-tuple of teachers' score across every
-          data column of another teacher, took <b>1087
+          generates the teacher's score across every data column
+          of 5 teachers at a time and returns the top 10, took <b>1087
           seconds</b>.</li>
 		</ul>
 		
 		<p><img class="fig" src="img/fig1.jpg" /></p>
 		
-		<p>ANALYSIS WHY DID IT SLOW DOWN BLAHBLAHBALH</p>
+		<p>It is apparent here that our simplistic mapper approach took the least time to generate all the scores for one teacher row.</p>
 
 			<p>We also tried a different approach, in which we use map-reduce to initially build the entire matrix of teacher-teacher similarity scores and save it as a dictionary with the entry format
         <samp>(id1,id2) : [SCORE]</samp>. The dictionary allows
