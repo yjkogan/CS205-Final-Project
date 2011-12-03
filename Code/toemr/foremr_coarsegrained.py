@@ -104,7 +104,7 @@ def compVerbatim(string1, string2):
 ################################################################################
 
 #import necessary modules
-import sys
+import sys,time
 import random as rand
 
 # import MRJob class
@@ -121,11 +121,12 @@ teacherlist = ["38","Jason","MA","11/9/2008 20:41","8043176","662","7231","Grove
 coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
 
-#Placeholder for the filename variable.
+#Placeholder for the filename variableo.
 #Updated dynamically by wrapper python script 'mr_launcher.py'
 filename = "../RawData/betterlesson.hcs_user_export.csv"
 
-#Function to calculate the similarity score
+funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
+
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
     scoredict = {}
@@ -135,57 +136,16 @@ def get_score(teacher,tocompare):
     num_cats_compared = 0
     #iterates through the different columns we want to compare
     for c,v in coldict.iteritems():
-        if(c == 'SchoolName'):
-            score = compSchool(teacher[v],tocompare[v])
-            #If a meaningful comparison happened, update the score trackers
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
-        elif(c == 'State'):
-            score = compState(teacher[v],tocompare[v])
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
-        elif(c == 'Grades'):
-            score = compGrades(teacher[v],tocompare[v])
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
-        elif(c == 'Subjects'):
-            score = compGrades(teacher[v],tocompare[v])
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
-        elif(c == 'Units'):
-            score = compGrades(teacher[v],tocompare[v])
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
-        elif(c == 'Courses'):
-            score = compGrades(teacher[v],tocompare[v])
-            if(score != None):
-                scoredict[c]=score
-                scoreval += score
-                num_cats_compared += 1
+       score = None
+       if c in funcs:
+          score = funcs[c](teacher[v],tocompare[v])
+       #If a meaningful comparison happened, update the score trackers
+       if(score != None):
+          scoredict[c]=score
+          scoreval += score
+          num_cats_compared += 1
 
-    '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
-    find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
-    #Inverts the dictionary (swaps keys and values) so that we can 
-    #get the max value
-    temp = dict(map(lambda scores: (scores[1],scores[0]),scoredict.items()))
-    #Gets the largest contributor to score. Ties are broken arbitrarily
-    try:
-        largestcontributor = temp[max(temp)]
-    except ValueError:
-        largestcontributor = None
-    
     #Returns a tuple of the score and the number of meaningful comparisons
-    
     return (round(scoreval,5),num_cats_compared)
 
 rowlen = 19
@@ -204,16 +164,15 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
+        num_teachers = len(row)/rowlen
         #calculate the score
-        for t in xrange(rowlen):
+        for t in xrange(num_teachers):
            score = get_score(self.teacher,row[t:t+rowlen])
         #Add this score to the list of teachers.
         #If no meaningful comparisons happened, add 0
            try:
               self.comparedts.append((int(row[0]),score[0]/score[1]))
-           except ZeroDivisionError:
-              self.comparedts.append((int(row[0]),0))
-           except ValueError:
+           except ZeroDivisionError,ValueError:
               pass
 
     def mapper_final(self):
@@ -232,11 +191,5 @@ class MySimTeachers(MRJob):
 
 if __name__ == '__main__':
     # launch the job!
-#    mr_job = MySimTeachers(args=[filename,])
     mr_job = MySimTeachers()
     mr_job.run()
-
-
-# Combiner instead of mapper_final
-# Less computationally intensive mappers
-# More computationally intensive
