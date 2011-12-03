@@ -3,7 +3,11 @@
 import difflib as d
 
 # Comparison functions. Return 1 for match, 0 for no match
-# Returns a float between 0 and 1 based on similarity for fuzzy matching (eg subject material)
+# Returns a float between 0 and 1 based on similarity for fuzzy 
+# matching (eg subject material)
+
+# Since the goal of this assignment was to explore how to make parallel
+# algorithms more efficient these similarity scores are very rudimentary
 
 # compares similarity of schools
 def compSchool(string1, string2):
@@ -38,7 +42,8 @@ def prepStringList(string, delim):
 	return map((lambda x: x.strip().lower()),list)
 
 # string list membership check
-# takes two strings that are lists using | as demarcator and checks if any element in string1 is in string2
+# takes two strings that are lists using | as demarcator and 
+# checks if any element in string1 is in string2
 def compList(string1, string2):
 	# if strings not provided, do not return a score
 	if (string1 == '\N' or string2 == '\N'):
@@ -55,7 +60,8 @@ def compList(string1, string2):
 	return 0
 
 # string list membership check that is fuzzy
-# takes two strings that are lists using | as demarcator and checks if any element in string1 is in string2
+# takes two strings that are lists using | as demarcator 
+# and checks if any element in string1 is in string2
 def compFuzzyList(string1, string2, precis):
 	# if strings not provided, do not return a score
 	if (string1 == '\N' or string2 == '\N'):
@@ -73,7 +79,8 @@ def compFuzzyList(string1, string2, precis):
 	return 0
 
 # fuzzy string comparison
-# returns 1 if string1 is "similar enough" to string2 using difflib with precision precis
+# returns 1 if string1 is "similar enough" 
+# to string2 using difflib with precision precis
 def compFuzzy(string1, string2, precis):
 	# if string is not provided, do not return a score
 	if (string1 == '\N' or string2 == '\N'):
@@ -81,9 +88,8 @@ def compFuzzy(string1, string2, precis):
 
 	# not using literal comparison, using difflib to catch mispellings
 	else:
-		# try quick_ratio() if this is too slow.
+                #These are "toy" comparisons
 		if (d.SequenceMatcher(None, string1, string2).ratio() > precis):
-			# SHOULD be same school; might have to play with comparison value
 			return 1
 		else:
 			# different school
@@ -112,14 +118,18 @@ from mrjob.job import MRJob
 from collections import defaultdict
 
 #Placeholder for the teacherlist variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
+#Updated dynamically by wrapper python script 'mr_launcher2.py'
 #teacherlist_placeholder#
 
-#Placeholder for the coldict variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
-coldict={'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
+#Dictionary of the the column number associated with each field
+coldict={'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,\
+'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,\
+                 'Units':10}
 
-funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
+#Dictionary so that we can find the correct function simply from
+#the name of the field
+funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,\
+'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
 
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
@@ -156,29 +166,36 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
-        #calculate the score for teachers with higher IDs
+        #calculate the score for teachers with higher IDs only
 	if (self.teacher[0] >= row[0]):
 		return
 	score = get_score(self.teacher,row)
 	#Add this score to the list of teachers.
-        #If no meaningful comparisons happened, add 0
+        #If no meaningful comparisons happened, add nothing
         try:
             self.comparedts.append((int(row[0]),score[0]/score[1]))
         except ZeroDivisionError,ValueError:
             pass
     
     def mapper_final(self):
-        #yield the top ten most similar teachers
+        # yield the top ten most similar teachers
+        # The score is the 1 value in the tuple, so make that the key
+        # Then sort so that the front of the list is the most common teachers
+        # Only pass the top 10 because a) we aren't going to use more than that
+        # and b) because it is very costly on the map-reduce framework to pass
+        # lots of data
         yield None, sorted(self.comparedts,\
-                               key=(lambda x: x[1]),reverse=True)
+                               key=(lambda x: x[1]),reverse=True)[:10]
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)
     def reducer(self, key, values):
+        # Accumulate all the most similar teachers in one list and select
+        # The top 10 of them
         allcompared = []
         for value in values:
             allcompared.extend(value)
-        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)
+        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)[:10]
 
 
 if __name__ == '__main__':
