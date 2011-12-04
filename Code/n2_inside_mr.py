@@ -115,13 +115,9 @@ from collections import defaultdict
 #Updated dynamically by wrapper python script 'mr_launcher.py'
 #teacherlist_placeholder#
 
-#Placeholder for the coldict variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
-#coldict_placeholder#
+coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
-#Placeholder for the filename variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
-#filename_placeholder#
+filename = '/home/yonatan/Documents/CS205/FinalProject/RawData/user2_export.csv'
 
 funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
 
@@ -144,30 +140,18 @@ def get_score(teacher,tocompare):
           scoreval += score
           num_cats_compared += 1
 
-    '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
-    find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
-    #Inverts the dictionary (swaps keys and values) so that we can 
-    #get the max value
-    temp = dict(map(lambda scores: (scores[1],scores[0]),scoredict.items()))
-    #Gets the largest contributor to score. Ties are broken arbitrarily
-    try:
-        largestcontributor = temp[max(temp)]
-    except ValueError:
-        largestcontributor = None
-    
     #Returns a tuple of the score and the number of meaningful comparisons
     
     return (round(scoreval,5),num_cats_compared)
 
 
-NUMRUNS = 10
+NUMRUNS = 100
 class MySimTeachers(MRJob):
     def __init__(self,*args,**kwargs):
         super(MySimTeachers,self).__init__(*args,**kwargs)
         #List to keep track of the teachers we have compared
         self.comparedts = defaultdict(list)
         #The teacher we are comparing
-        self.reader = csv.reader(open(filename,'r'))
     # override pre-defined mapper by creating a generator
     # with the default name (mapper)
     def mapper(self, key, value):
@@ -175,29 +159,33 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
+        self.file = open(filename,'r')
+        self.reader = csv.reader(self.file)
         #calculate the score
         i =0
         row[0] = int(row[0])
+        self.file.seek(0)
         for r in self.reader:
            r[0] = int(r[0])
            if(row[0] < r[0]):
               i += 1
               score = get_score(row,r)
-               #Add this score to the list of teachers.
-               #If no meaningful comparisons happened, add 0
+              #Add this score to the list of teachers.
+              #If no meaningful comparisons happened, add 0
               try:
                  self.comparedts[row[0]].append([r[0],score[0]/score[1]])
-              except ZeroDivisionError:
-                 self.comparedts[row[0]].append([r[0],0])
-              # except ZeroDivisionError,ValueError:
-              #    pass
+              except ZeroDivisionError,ValueError:
+                      pass
+        
            if i > NUMRUNS:
               break
-
+        self.file.close()
     def mapper_final(self):
        #yield the top ten most similar teachers
        for key,ts in self.comparedts.iteritems():
-          yield key, sorted(ts, key=(lambda x: x[1]),reverse=True)
+          #yield key,ts
+          yield key, sorted(ts, key=(lambda x: x[1]),reverse=True)[:20]
+
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)

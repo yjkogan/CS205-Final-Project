@@ -104,7 +104,7 @@ def compVerbatim(string1, string2):
 ################################################################################
 
 #import necessary modules
-import sys
+import sys,csv
 import random as rand
 
 # import MRJob class
@@ -147,6 +147,9 @@ def get_score(teacher,tocompare):
 
     #Returns a tuple of the score and the number of meaningful comparisons
     return (round(scoreval,5),num_cats_compared)
+root = '/home/yonatan/Documents/CS205/FinalProject/'
+headtsfile = root + 'Code/n2_output.txt'
+headtsdb = root + 'RawData/user2_export.csv'
 
 class MySimTeachers(MRJob):
     def __init__(self,*args,**kwargs):
@@ -155,23 +158,42 @@ class MySimTeachers(MRJob):
         self.comparedts = []
         #The teacher we are comparing
         self.teacher = teacherlist
-
+        self.headts = open(headtsfile,'r')
+        self.similarts = []
+        self.headtsdata = csv.reader(open(headtsdb,'r'))
     # override pre-defined mapper by creating a generator
     # with the default name (mapper)
     def mapper(self, key, value):
         #Need this so that mr.job thinks it is a generator
         if 0:
             yield
+
+        for hrow in self.headtsdata:
+           score = get_score(self.teacher,hrow)
+           if score[0]>=.5:
+              self.similarts.append(int(hrow[0]))
+        #print self.similarts
+        for line in self.headts.xreadlines():
+           tandsim = line.strip('\n').split('\t')
+           tandsim = map((lambda x: eval(x)),tandsim)
+           if int(tandsim[0]) in self.similarts:
+              self.similarts.remove(int(tandsim[0]))
+              for t in tandsim[1]:
+                 self.similarts.append(int(t[0]))
+        #print self.similarts
         row = value.split(',')
-        #calculate the score
-        score = get_score(self.teacher,row)
-        print len(self.comparedts)
-        #Add this score to the list of teachers.
-        #If no meaningful comparisons happened, add 0
-        try:
-            self.comparedts.append((int(row[0]),score[0]/score[1]))
-        except ZeroDivisionError,ValueError:
-            pass
+
+        if int(row[0]) in self.similarts:
+           #calculate the score
+           score = get_score(self.teacher,row)
+           print row[0] + str(score)
+           #Add this score to the list of teachers.
+           #If no meaningful comparisons happened, add 0
+           try:
+              self.comparedts.append((int(row[0]),score[0]/score[1]))
+           except ZeroDivisionError,ValueError:
+              pass
+        
 
     def mapper_final(self):
         #yield the top ten most similar teachers
@@ -189,11 +211,6 @@ class MySimTeachers(MRJob):
 
 if __name__ == '__main__':
     # launch the job!
-#    mr_job = MySimTeachers(args=[filename,])
     mr_job = MySimTeachers()
     mr_job.run()
 
-
-# Combiner instead of mapper_final
-# Less computationally intensive mappers
-# More computationally intensive

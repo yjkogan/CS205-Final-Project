@@ -104,7 +104,7 @@ def compVerbatim(string1, string2):
 ################################################################################
 
 #import necessary modules
-import sys
+import sys,csv,time
 import random as rand
 
 # import MRJob class
@@ -121,12 +121,10 @@ teacherlist = ["38","Jason","MA","11/9/2008 20:41","8043176","662","7231","Grove
 coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
 
-#Placeholder for the filename variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
-filename = "../RawData/betterlesson.hcs_user_export.csv"
+# Path to the file. UPDATE THIS TO RUN
+filename = "../../RawData/larger_dataset.csv"
 
-funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
-
+#Function to calculate the similarity score
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
     scoredict = {}
@@ -136,64 +134,80 @@ def get_score(teacher,tocompare):
     num_cats_compared = 0
     #iterates through the different columns we want to compare
     for c,v in coldict.iteritems():
-       score = None
-       if c in funcs:
-          score = funcs[c](teacher[v],tocompare[v])
-       #If a meaningful comparison happened, update the score trackers
-       if(score != None):
-          scoredict[c]=score
-          scoreval += score
-          num_cats_compared += 1
+        if(c == 'SchoolName'):
+            score = compSchool(teacher[v],tocompare[v])
+            #If a meaningful comparison happened, update the score trackers
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'State'):
+            score = compState(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Grades'):
+            score = compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Subjects'):
+            score = compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Units'):
+            score = compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
+        elif(c == 'Courses'):
+            score = compGrades(teacher[v],tocompare[v])
+            if(score != None):
+                scoredict[c]=score
+                scoreval += score
+                num_cats_compared += 1
 
+
+    '''Taken from http://desk.stinkpot.org:8080/tricks/index.php/2006/10/ 
+    find-the-key-for-the-minimum-or-maximum-value-in-a-python-dictionary/'''
+    #Inverts the dictionary (swaps keys and values) so that we can 
+    #get the max value
+    temp = dict(map(lambda scores: (scores[1],scores[0]),scoredict.items()))
+    #Gets the largest contributor to score. Ties are broken arbitrarily
+    try:
+        largestcontributor = temp[max(temp)]
+    except ValueError:
+        largestcontributor = None
+    
     #Returns a tuple of the score and the number of meaningful comparisons
+    
     return (round(scoreval,5),num_cats_compared)
 
-class MySimTeachers(MRJob):
-    def __init__(self,*args,**kwargs):
-        super(MySimTeachers,self).__init__(*args,**kwargs)
-        #List to keep track of the teachers we have compared
-        self.comparedts = []
-        #The teacher we are comparing
-        self.teacher = teacherlist
+#List to keep track of the teachers we have compared
+comparedts = []
+#The teacher we are comparing
+# override pre-defined mapper by creating a generator
+# with the default name (mapper)
+reader = csv.reader(open(filename,'r'))
+start = time.time()
+i=0
+for t in reader:
+   i+= 1
+   if(i%10000)==0:
+      print i
+   score = get_score(teacherlist,t)
+   try:
+      comparedts.append((int(t[0]),score[0]/score[1]))
+   except ZeroDivisionError:
+      comparedts.append((int(t[0]),0))
+   except ValueError:
+      pass
+timetaken = time.time() - start
+print sorted(comparedts,key=(lambda x: x[1]),reverse=True)
+print timetaken
 
-    # override pre-defined mapper by creating a generator
-    # with the default name (mapper)
-    def mapper(self, key, value):
-        #Need this so that mr.job thinks it is a generator
-        if 0:
-            yield
-        row = value.split(',')
-        #calculate the score
-        score = get_score(self.teacher,row)
-        print len(self.comparedts)
-        #Add this score to the list of teachers.
-        #If no meaningful comparisons happened, add 0
-        try:
-            self.comparedts.append((int(row[0]),score[0]/score[1]))
-        except ZeroDivisionError,ValueError:
-            pass
-
-    def mapper_final(self):
-        #yield the top ten most similar teachers
-        yield None, sorted(self.comparedts,\
-                               key=(lambda x: x[1]),reverse=True)[:10]
-
-    # override pre-defined reducer by creating a generator
-    # with the default name (reducer)
-    def reducer(self, key, values):
-        allcompared = []
-        for value in values:
-            allcompared.extend(value)
-        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)[:10]
-
-
-if __name__ == '__main__':
-    # launch the job!
-#    mr_job = MySimTeachers(args=[filename,])
-    mr_job = MySimTeachers()
-    mr_job.run()
-
-
-# Combiner instead of mapper_final
-# Less computationally intensive mappers
-# More computationally intensive

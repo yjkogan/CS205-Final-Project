@@ -104,7 +104,7 @@ def compVerbatim(string1, string2):
 ################################################################################
 
 #import necessary modules
-import sys
+import sys, csv
 import random as rand
 
 # import MRJob class
@@ -113,20 +113,15 @@ from collections import defaultdict
 
 #Placeholder for the teacherlist variable.
 #Updated dynamically by wrapper python script 'mr_launcher.py'
-teacherlist = ["38","Jason","MA","11/9/2008 20:41","8043176","662","7231","Grove Hall Prep Middle School","Math | Number Sense and Operations | Algebra | Geometry | Data Analysis and Probability | Measurement","RPC 6th Grade Math Procedures | RPC 6th Grade Math Problem Solving | GHP 5th Grade Math Y","1 Whole Numbers | 2 Decimals | 3 Fractions | 4 Percents | 5 Geometry | Daily Activities | 6 Extensions and Review | Assessments | Whole Numbers | Integers | Number Theory | Data Analysis | Ratio and Proportion | Linear Relationships | Fractions | Decimals | Percents | Probability | Expressions | Patterns and Sequences | Measurement | Volume | Perimeter and Area | Working with Data | Coordinate Plane | Polygons | 3D Geometry | Introduction to Math Y","Fifth grade",'','','','','','','']
+#teacherlist_placeholder#
 
-
-#Placeholder for the coldict variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
 coldict = {'SchoolName':7,'State':2,'Grades':11,'TeacherID':0,'TeacherName':1,'DateCreated':3,'Score':4,'Uploads':5,'Downloads':6,'Subjects':8,'Courses':9,'Units':10}
 
-
-#Placeholder for the filename variable.
-#Updated dynamically by wrapper python script 'mr_launcher.py'
-filename = "../RawData/betterlesson.hcs_user_export.csv"
+filename = '/home/yonatan/Documents/CS205/FinalProject/RawData/user2_export.csv'
 
 funcs = {'SchoolName':compSchool,'State':compState,'Grades':compGrades,'Subjects':compSubjects,'Courses':compCourses,'Units':compUnits}
 
+#Function to calculate the similarity score
 def get_score(teacher,tocompare):
     #keeps track of the contributions of each characteristic
     scoredict = {}
@@ -146,16 +141,17 @@ def get_score(teacher,tocompare):
           num_cats_compared += 1
 
     #Returns a tuple of the score and the number of meaningful comparisons
+    
     return (round(scoreval,5),num_cats_compared)
 
+
+NUMRUNS = 100
 class MySimTeachers(MRJob):
     def __init__(self,*args,**kwargs):
         super(MySimTeachers,self).__init__(*args,**kwargs)
         #List to keep track of the teachers we have compared
-        self.comparedts = []
+        self.comparedts = defaultdict(list)
         #The teacher we are comparing
-        self.teacher = teacherlist
-
     # override pre-defined mapper by creating a generator
     # with the default name (mapper)
     def mapper(self, key, value):
@@ -163,28 +159,46 @@ class MySimTeachers(MRJob):
         if 0:
             yield
         row = value.split(',')
+	# Open the file from which we will read teachers
+	# We compare the row we read in against ever teacher in this file
+	# in order to fill an entire row of the matrix with one mapper.
+	# This allows us to run everything without making multiple calls to
+	# emr, saving the startup time.
+        self.file = open(filename,'r')
+        self.reader = csv.reader(self.file)
         #calculate the score
-        score = get_score(self.teacher,row)
-        print len(self.comparedts)
-        #Add this score to the list of teachers.
-        #If no meaningful comparisons happened, add 0
-        try:
-            self.comparedts.append((int(row[0]),score[0]/score[1]))
-        except ZeroDivisionError,ValueError:
-            pass
-
+        i =0
+        row[0] = int(row[0])
+        for r in self.reader:
+           r[0] = int(r[0])
+	   #Only compare if current read in teacher has a higher id
+           if(row[0] < r[0]):
+              i += 1
+              score = get_score(row,r)
+              #Add this score to the list of teachers.
+              #If no meaningful comparisons happened, add 0
+              try:
+                 self.comparedts[row[0]].append([r[0],score[0]/score[1]])
+              except ZeroDivisionError,ValueError:
+                      pass
+        
+           if i > NUMRUNS:
+              break
+        self.file.close()
     def mapper_final(self):
-        #yield the top ten most similar teachers
-        yield None, sorted(self.comparedts,\
-                               key=(lambda x: x[1]),reverse=True)[:10]
+       #yield the top ten most similar teachers
+       for key,ts in self.comparedts.iteritems():
+          #yield key,ts
+          yield key, sorted(ts, key=(lambda x: x[1]),reverse=True)[:20]
+
 
     # override pre-defined reducer by creating a generator
     # with the default name (reducer)
     def reducer(self, key, values):
-        allcompared = []
-        for value in values:
-            allcompared.extend(value)
-        yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)[:10]
+       allcompared = []
+       for value in values:
+          allcompared.extend(value)
+       yield key, sorted(allcompared,key=(lambda x: x[1]),reverse=True)
 
 
 if __name__ == '__main__':
