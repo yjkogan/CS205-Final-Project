@@ -166,11 +166,9 @@ class MySimTeachers(MRJob):
         row = value.split(',')
         num_teachers = len(row)/rowlen
         #calculate the score
-        # for t in xrange(num_teachers):
-        #    score = get_score(self.teacher,row[t*rowlen:(t+1)*rowlen])
         for t in xrange(num_teachers):
-                score = get_score(self.teacher,row)
-        # score = get_score(self.teacher,row)
+           score = get_score(self.teacher,row[t*rowlen:(t+1)*rowlen])
+
         #Add this score to the list of teachers.
         #If no meaningful comparisons happened, add 0
         try:
