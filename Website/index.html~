@@ -67,7 +67,7 @@
 
         <p>An identified problem in primary and secondary education is that it is often
         necessary for teachers to spend an inordinate amount of time making lesson plans,
-        rather than focusing on increasing individual student performance. One way to enable teachers spend more time focusing on their individual teaching needs is to
+        rather than focusing on increasing individual student performance. One way to help teachers spend more time on teaching is to
         give them access to the many high quality lesson plans that have already been developed and refined by similar
         teachers.</p>
 
@@ -76,12 +76,14 @@
         curricula." They have collected a large database of teachers, lesson plans, and
         related metadata. In order to help teachers identify relevant lesson plans,
         BetterLesson hopes to direct teachers to other educators who share similar
-        content areas and teaching styles. This recommendation engine needs to be fast against a increasingly large
-        dataset. The focus of this project is minimizing the latency that a user of
+        content areas and teaching styles.</p>
+
+        <p>This recommendation engine needs to be fast against a increasingly large
+        dataset.</p>
+
+        <p>The focus of this project is minimizing the latency that a user of
         BetterLessons experiences when searching for similar teachers and lesson
-        plans, so that educators can spend less time developing redundant lesson plans, and instead collaborate and peer-review similar lesson plans, and personalize curricula for their own specific needs.</p>
-		
-		<p>We explore and benchmark various strategies to create these recommendations using <a href="https://github.com/Yelp/mrjob">MRJOB</a> and <a href="http://aws.amazon.com/">Amazon EMR.</a></p>
+        plans.</p>
       </div>
 
       <div id="tabs-2">
@@ -626,7 +628,7 @@ class MySimTeachers(MRJob):
         because of the overhead associated with distributing data to the mappers and
         passing data between mapper and reducer. Since we only pass the top 10 teachers,
         the reduction in the number of teachers we are comparing against does not improve
-        data passing between mapper and reducer, thus we see a smaller increase than we might
+        data passing between mapper and reducer, thus a smaller increase than we might
         expect.</p>
         
         <p>We also wrote code that would calculate scores for the entire triangular matrix
@@ -724,9 +726,9 @@ class MySimTeachers(MRJob):
       </div>
 
       <div id="tabs-7">
-        <p>The most significant thing that we learned from this project is that the map-reduce
+        <p>The biggest thing we learned from this project is that the map-reduce
         framework is not very flexible. It does not lend itself well to running
-        2-variable computations when both variables are independent and unknown in
+        2-variable computations when both bariables are independent, and unknown in
         advance. This made it very difficult to fill a matrix of similarity scores
         without running multiple map-reduce jobs. One way to solve this would be to
         reshape the data so that each pair of teachers has its own line, but this leads
@@ -736,15 +738,16 @@ class MySimTeachers(MRJob):
         most basic aspects of it made it very challenging to implement a highly
         complex system that does not seem to be in line with most map-reduce jobs.</p>
 
-			<p>It was also a struggle to understand the nuances Amazon's EC2 framework. It was straightforward to get a job running
-			on EMR, but difficult to avoid the bottlenecks of booting up new instances, and often difficult to debug. We also had some code that depended on <samp>stdout</samp> break when moving from a local computer to AWS. Ideally we would have liked to treat
-			EMR as an even more powerful version of Resonance, but there were many more code optimizations to consider when developing for AWS. It was frustrating
+			<p>It was also a struggle to understand amazon's EC2 framework. It was straightforward to get a job running
+			on EMR, but difficult to avoid the bottlenecks of booting up new instances. Ideally we would have liked to treat
+			EMR as an even more powerful version of resonance, but it does not seem to be built for that. It was frustrating
 			to have good ideas and working code from which we could not collect meaningful data.</p>
 
         <p>However, it was a lot of fun to see the tremendous speedup our implementation provided over the serial. It was also very
-        satisfying to hypothesize causes for the coarse-grained mappers degenerate performance and then confirm our hypothesis with new data.
-        Furthermore, after lots of algorithmic theory, we were amused that the real way to speed up our performance was to improve the hardware. That being said, such an increase
-        in hardware benefits map-reduce much more than it might benefit the serial version.</p>
+        satisfying to hypothesize a reason for the coarse-grained mappers slow run time and then confirm our hypothesis with new data.
+        Furthermore, we were amused that the real way to speed up performance was to improve the hardware. That being said, such as increase
+        in hardware benefits map-reduce much more than it might benefit the serial version which supports creating parallel algorithms whenever
+        possible for a suitably large dataset.</p>
       </div>
 
       <div id="tabs-9">
